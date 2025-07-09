@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { validationPipeOpts } from './common/validation/option.validation';
 import { ENV_APP_KEY } from './config/app.config';
+import { setupSwagger } from './swagger/setup.swagger';
 
 import type { IEnvApp } from './config/app.config';
 
@@ -14,8 +15,8 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(new ValidationPipe(validationPipeOpts));
 
   const appEnv = app.get(ConfigService<IEnvApp>).getOrThrow(ENV_APP_KEY, { infer: true });
-
   const baseUrl = `${appEnv.protocol}://${appEnv.host}:${appEnv.port}`;
+  const apiVersionPath = `${appEnv.basePath}/v${appEnv.version}`;
 
   // Enable version for across application
   app
@@ -26,9 +27,13 @@ async function bootstrap(): Promise<void> {
     })
     .setGlobalPrefix(appEnv.basePath);
 
+  // Integrate Swagger
+  setupSwagger(app);
+
   await app.listen(appEnv.port);
 
-  Logger.log(`Application is running on: ${baseUrl}/${appEnv.basePath}/v${appEnv.version}`);
+  Logger.log(`${baseUrl}/${apiVersionPath}`, 'Server');
+  Logger.log(`${baseUrl}/${apiVersionPath}/${appEnv.swaggerResource}`, 'API Documentation');
 }
 
 void bootstrap();

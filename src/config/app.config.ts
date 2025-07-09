@@ -13,6 +13,7 @@ interface IAppConfig {
   port: number;
   version: number;
   basePath: string;
+  swaggerResource: string;
 }
 
 export const ENV_APP_KEY = 'ENV_APP_KEY';
@@ -62,6 +63,10 @@ class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   public readonly APP_BASE_PATH: string;
+
+  @IsString()
+  @IsNotEmpty()
+  public readonly APP_SWAGGER_RESOURCE: string;
 }
 
 // Step 3: Register environment variables with registerAs() + handle validation
@@ -76,5 +81,6 @@ export default registerAs(ENV_APP_KEY, (): IAppConfig => {
     port: validatedConfig.APP_PORT,
     version: validatedConfig.APP_VERSION,
     basePath: validatedConfig.APP_BASE_PATH,
+    swaggerResource: validatedConfig.APP_SWAGGER_RESOURCE,
   };
 });
