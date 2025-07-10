@@ -5,6 +5,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { ENV_APP_KEY } from 'src/config/app.config';
 
+import { appTokenName } from './swagger.const';
+
 import type { IEnvApp } from 'src/config/app.config';
 
 export const setupSwagger = (app: INestApplication): void => {
@@ -15,6 +17,16 @@ export const setupSwagger = (app: INestApplication): void => {
     .setDescription(
       'REST API for an Airbnb-like platform that enables users to list, discover, and book unique accommodations around the world.',
     )
+    .addBearerAuth(
+      {
+        type: 'apiKey',
+        scheme: 'Bearer',
+        in: 'header',
+        name: appTokenName,
+        description: 'Application token is required for all endpoints',
+      },
+      appTokenName,
+    )
     .setVersion(`${version}`)
     .build();
 
@@ -22,5 +34,8 @@ export const setupSwagger = (app: INestApplication): void => {
   SwaggerModule.setup(`v${version}/${swaggerResource}`, app, documentFactory, {
     useGlobalPrefix: true,
     customSiteTitle: 'Airbnb Documentation',
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
   });
 };
