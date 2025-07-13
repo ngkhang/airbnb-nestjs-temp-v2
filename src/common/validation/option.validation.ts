@@ -1,14 +1,9 @@
 import type { ValidationError, ValidationPipeOptions } from '@nestjs/common';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 
-class ErrorDetail {
-  constructor(
-    public code: string,
-    public message: string,
-    public field?: string,
-    public value?: any,
-  ) {}
-}
+import { StructuredHttpException } from '../exceptions/detailed-error.exception';
+
+import type { ErrorDetail } from '../types/error.type';
 
 export const validationPipeOpts: ValidationPipeOptions = {
   stopAtFirstError: true,
@@ -20,10 +15,22 @@ export const validationPipeOpts: ValidationPipeOptions = {
   },
   exceptionFactory: (validationErrors: ValidationError[]): void => {
     const errors: ErrorDetail[] = validationErrors.map(
-      ({ constraints, property, value }: ValidationError) =>
-        new ErrorDetail('VALIDATION_FAILED', constraints ? Object.values(constraints)[0] : '', property, value),
+      ({ constraints, property, value }: ValidationError): ErrorDetail => {
+        return {
+          code: 'VALIDATION_FAILED',
+          message: constraints ? Object.values(constraints)[0] : 'Invalid value',
+          field: property,
+          value,
+        };
+      },
     );
 
-    throw new HttpException({ message: 'Please check input', errors }, HttpStatus.BAD_REQUEST);
+    throw new StructuredHttpException(
+      {
+        message: 'Validation failed',
+        errors,
+      },
+      HttpStatus.BAD_REQUEST,
+    );
   },
 };
