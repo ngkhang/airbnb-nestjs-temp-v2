@@ -1,5 +1,7 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+
+import { StructuredHttpException } from 'src/common/exceptions/detailed-error.exception';
 
 import { appTokenName } from './swagger.const';
 
@@ -20,14 +22,16 @@ export class SwaggerAuthGuard extends AuthGuard('swagger-jwt') {
     if (typeof info === 'object' || info instanceof RequestInfo) {
       const { code, message } = this.mapJwtError(info as object);
 
-      throw new HttpException(
+      throw new StructuredHttpException(
         {
           message: 'UnAuthorized',
-          errors: {
-            code,
-            message,
-            field: appTokenName,
-          },
+          errors: [
+            {
+              code,
+              message,
+              field: appTokenName,
+            },
+          ],
         },
         HttpStatus.UNAUTHORIZED,
       );
